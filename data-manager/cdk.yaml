@@ -1,0 +1,156 @@
+---
+# Tools from Silicos-it
+# See http://silicos-it.be.s3-website-eu-west-1.amazonaws.com/
+kind: DataManagerJobDefinition
+kind-version: '2021.1'
+name: CDK jobs
+collection: cdk
+repository-url: https://github.com/InformaticsMatters/squonk2-cdk/data-manager/cdk.yaml
+repository-tag: '1.0.0'
+
+jobs:
+  molecular-descriptors:
+    name: CDK molecular properties
+    description: >-
+      Calculate molecular properties using CDK's molecular descriptors.
+    version: '1.0.0'
+    category: comp chem
+    keywords:
+    - cdk
+    - properties
+    doc-url: 'https://discourse.squonk.it/t/job-shape-it/93'
+    image:
+      name: informaticsmatters/squonk2-cdk
+      tag: 'latest'
+      project-directory: /data
+      working-directory: /data
+    # the entrypoint is expected to be "java -cp <classpath>"
+    # so that this command is appended as the CMD
+    command: >-
+      squonk.jobs.cdk.DescriptorsExec
+      --input '{{ inputFile }}'
+      --output '{{ outputFile }}'
+      {% if alogp %}--alogp{% endif %}
+      {% if xlogp %}--xlogp{% endif %}
+      {% if jplogp %}--jplogp{% endif %}
+      {% if hba %}--hba{% endif %}
+      {% if hbd %}--hbd{% endif %}
+      {% if tpsa %}--tpsa{% endif %}
+      {% if fcsp3 %}--fcsp3{% endif %}
+      {% if rotb %}--rotb{% endif %}
+      {% if rings %}--rings{% endif %}
+      {% if wiener %}--wiener{% endif %}
+    variables:
+      order:
+        options:
+        - outputFile
+        - alogp
+        - xlogp
+        - jplogp
+        - hba
+        - hbd
+        - tpsa
+        - fcsp3
+        - rotb
+        - rings
+        - wiener
+      inputs:
+        type: object
+        required:
+        - inputFile
+        properties:
+          inputFile:
+            title: Input molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            type: file
+      outputs:
+        type: object
+        properties:
+          alignments:
+            title: Output molecules
+            mime-types:
+            - chemical/x-mdl-sdfile
+            creates: '{{ outputFile }}'
+            type: file
+      options:
+        type: object
+        required:
+        - outputFile
+        - alogp
+        - xlogp
+        - jplogp
+        - hba
+        - hbd
+        - tpsa
+        - fcsp3
+        - rotb
+        - rings
+        - wiener
+        properties:
+          outputFile:
+            title: Output file (.sdf)
+            type: string
+            pattern: "^[A-Za-z0-9_/\\.\\-]+$"
+          alogp:
+            title: Calculate ALogP and AMR
+            type: boolean
+            default: true
+          xlogp:
+            title: Calculate XLogP
+            type: boolean
+            default: true
+          jplogp:
+            title: Calculate JPLogP
+            type: boolean
+            default: true
+          hba:
+            title: Calculate H-bond acceptors
+            type: boolean
+            default: true
+          hbd:
+            title: Calculate H-bond donors
+            type: boolean
+            default: true
+          tpsa:
+            title: Calculate topological polar surface area
+            type: boolean
+            default: true
+          fcsp3:
+            title: Calculate fraction SP3 carbons
+            type: boolean
+            default: true
+          rotb:
+            title: Calculate rotatable bond count
+            type: boolean
+            default: true
+          rings:
+            title: Calculate ring counts
+            type: boolean
+            default: true
+          wiener:
+            title: Calculate Wiener numbers
+            type: boolean
+            default: true
+    tests:
+      simple-execution:
+        inputs:
+          inputFile: data/dhfr_3d.sdf
+        options:
+          outputFile: foo/cdk-predictions.sdf
+          alogp: true
+          xlogp: true
+          jplogp: true
+          hba: true
+          hbd: true
+          tpsa: true
+          fcsp3: true
+          rotb: true
+          rings: true
+          wiener: true
+        checks:
+          exitCode: 0
+          outputs:
+          - name: foo/cdk-predictions.sdf
+            checks:
+            - exists: true

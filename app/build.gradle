@@ -11,12 +11,15 @@ plugins {
     id 'groovy'
 
     id 'java'
+    // we enable the application plugin so that we can run things using "./gradlew run ..."
+    // but the container is build using the docker plugin that follows
+    id 'application'
 
     // docker plugin
     id 'com.bmuschko.docker-java-application' version '7.3.0'
 }
 
-import com.bmuschko.gradle.docker.tasks.image.*
+import static com.bmuschko.gradle.docker.tasks.image.Dockerfile.*
 
 repositories {
     // Use Maven Central for resolving dependencies.
@@ -59,12 +62,12 @@ dependencies {
     testImplementation "org.openscience.cdk:cdk-datadebug:$cdkVersion"
 }
 
-//application {
-//    // Define the main class for the application.
-//    // this can be set as a commandline option e.g.
-//    // ./gradlew run --args="--help" -PmainClass=org.foo.Bar
-//    mainClass = project.hasProperty("mainClass") ? project.getProperty("mainClass") : 'squonk.jobs.cdk.DescriptorsExec'
-//}
+application {
+    // Define the main class for the application.
+    // this can be set as a commandline option e.g.
+    // ./gradlew run --args="--help" -PmainClass=org.foo.Bar
+    mainClass = project.hasProperty("mainClass") ? project.getProperty("mainClass") : 'squonk.jobs.cdk.DescriptorsExec'
+}
 
 tasks.named('test') {
     // Use JUnit Platform for unit tests.
@@ -77,8 +80,20 @@ docker {
         maintainer = 'Tim Dudgeon "tdudgeon@informaticsmatters.com"'
         ports = []
         images = ['informaticsmatters/squonk2-cdk:latest']
-        jvmArgs = ['-Xms256m', '-Xmx512m']
         mainClassName = 'squonk.jobs.cdk.DescriptorsExec'
     }
 }
 
+// This modifies the Dockerfile that is build by the docker-java-application plugin.
+// The ENTRYPOINT is replaced with 'java' and the classpath arguments
+// A CMD added that is '-version'.
+// The expectation is that the CMD will be overridden at runtime.
+dockerCreateDockerfile {
+    List<Instruction> originalInstructions = new ArrayList<Instruction>(instructions.get())
+    int entrypointIndex = originalInstructions
+            .findIndexOf { it.keyword == EntryPointInstruction.KEYWORD}
+    originalInstructions.remove(entrypointIndex)
+    originalInstructions.add(new EntryPointInstruction("java", "-cp", "/app/resources:/app/classes:/app/libs/*"))
+    originalInstructions.add(new DefaultCommandInstruction("-version"))
+    instructions.set(originalInstructions)
+}

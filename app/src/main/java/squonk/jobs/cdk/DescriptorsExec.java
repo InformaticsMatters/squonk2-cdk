@@ -24,6 +24,9 @@ import squonk.jobs.cdk.util.MolecularDescriptors;
 import squonk.jobs.cdk.util.MoleculeObject;
 import squonk.jobs.cdk.util.MoleculeUtils;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -160,6 +163,12 @@ public class DescriptorsExec {
         }
 
         final MoleculeObject.Representation repr = outputRepresentation;
+
+        Path path = Paths.get(outputFile);
+        Path dir = path.getParent();
+        if (dir != null) {
+            Files.createDirectories(dir);
+        }
 
         try (SDFWriter writer = MoleculeUtils.createSDFWriter(outputFile)) {
 
