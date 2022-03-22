@@ -136,7 +136,6 @@ public class MoleculeUtils {
      * @throws IOException
      */
     public static SDFWriter createSDFWriter(String file) throws IOException {
-
         SDFWriter writer = new SDFWriter(new FileWriter(file));
         return writer;
     }
@@ -145,14 +144,15 @@ public class MoleculeUtils {
      * Read this SD-file and generate a list of {@link MoleculeObjects}.
      * @param file
      * @return
-     * @throws FileNotFoundException
+     * @throws IOException
      */
-    public static List<MoleculeObject> readSdf(String file) throws FileNotFoundException {
-        IteratingSDFReader reader = createSDFReader(file);
+    public static List<MoleculeObject> readSdf(String file) throws IOException {
         List<MoleculeObject> mols = new ArrayList<>();
-        while (reader.hasNext()) {
-            IAtomContainer molecule = (IAtomContainer)reader.next();
-            mols.add(new MoleculeObject(molecule));
+        try (IteratingSDFReader reader = createSDFReader(file)) {
+            while (reader.hasNext()) {
+                IAtomContainer molecule = (IAtomContainer) reader.next();
+                mols.add(new MoleculeObject(molecule));
+            }
         }
         return mols;
     }

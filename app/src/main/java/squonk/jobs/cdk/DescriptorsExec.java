@@ -19,10 +19,7 @@ import org.apache.commons.cli.*;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.io.SDFWriter;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
-import squonk.jobs.cdk.util.DescriptorCalculator;
-import squonk.jobs.cdk.util.MolecularDescriptors;
-import squonk.jobs.cdk.util.MoleculeObject;
-import squonk.jobs.cdk.util.MoleculeUtils;
+import squonk.jobs.cdk.util.*;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +34,7 @@ import java.util.stream.Stream;
 public class DescriptorsExec {
 
     private static final Logger LOG = Logger.getLogger(DescriptorsExec.class.getName());
+    private static final DMLogger DMLOG = new DMLogger();
 
     private CommandLine cmd;
 
@@ -88,6 +86,11 @@ public class DescriptorsExec {
 
             CommandLineParser parser = new DefaultParser();
             CommandLine cmd = parser.parse(options, args);
+            StringBuilder builder = new StringBuilder(DescriptorsExec.class.getName());
+            for (String arg: args) {
+                builder.append(" ").append(arg);
+            }
+            DMLOG.logEvent(DMLogger.Level.INFO,  builder.toString());
 
             DescriptorsExec exec = new DescriptorsExec(cmd);
             exec.calculate();
@@ -139,7 +142,7 @@ public class DescriptorsExec {
         if (descriptors.length == 0) {
             throw new IllegalArgumentException("ERROR: No descriptors specified");
         }
-        LOG.info("Calculating " + descriptors.length + " descriptors");
+        DMLOG.logEvent(DMLogger.Level.INFO,"Calculating " + descriptors.length + " descriptors");
         DescriptorCalculator[] calculators = DescriptorCalculator.createCalculators(descriptors);
 
         String inputFile = cmd.getOptionValue("input");
@@ -147,9 +150,6 @@ public class DescriptorsExec {
 
         final AtomicInteger count = new AtomicInteger(0);
         final AtomicInteger errors = new AtomicInteger(0);
-
-        IteratingSDFReader reader = MoleculeUtils.createSDFReader(inputFile);
-        Stream<MoleculeObject> stream = DescriptorCalculator.calculate(reader, calculators, errors);
 
         MoleculeObject.Representation outputRepresentation = MoleculeObject.Representation.Original;
         if (cmd.hasOption("addhs")) {
@@ -170,21 +170,27 @@ public class DescriptorsExec {
             Files.createDirectories(dir);
         }
 
-        try (SDFWriter writer = MoleculeUtils.createSDFWriter(outputFile)) {
+        try (IteratingSDFReader reader = MoleculeUtils.createSDFReader(inputFile)) {
 
-            stream.forEachOrdered(mo -> {
-                try {
-                    count.incrementAndGet();
-                    writer.write(mo.getRepresentation(repr));
-                } catch (CDKException e) {
-                    errors.incrementAndGet();
-                    LOG.info("Failed to write molecule " + count.intValue());
-                }
-            });
-            LOG.info(String.format("Processed %s molecules, %s errors.", count.intValue(), errors.intValue()));
+            Stream<MoleculeObject> stream = DescriptorCalculator.calculate(reader, calculators, errors);
+
+            try (SDFWriter writer = MoleculeUtils.createSDFWriter(outputFile)) {
+
+                stream.forEachOrdered(mo -> {
+                    try {
+                        count.incrementAndGet();
+                        writer.write(mo.getRepresentation(repr));
+                    } catch (CDKException e) {
+                        errors.incrementAndGet();
+                        LOG.info("Failed to write molecule " + count.intValue());
+                    }
+                });
+                DMLOG.logEvent(DMLogger.Level.INFO,
+                        String.format("Processed %s molecules, %s errors.", count.intValue(), errors.intValue()));
+                int cost = count.intValue() * descriptors.length;
+                DMLOG.logCost((float)cost, false);
+            }
         }
-
     }
-
 
 }
