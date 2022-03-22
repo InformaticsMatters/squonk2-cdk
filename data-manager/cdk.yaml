@@ -24,10 +24,10 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
-    # the entrypoint is expected to be "java -cp <classpath>"
-    # so that this command is appended as the CMD
+    # The container has no entrypoint so this is the command that is executed.
+    # The CLASSPATH environment variable in the container is set.
     command: >-
-      squonk.jobs.cdk.DescriptorsExec
+      java squonk.jobs.cdk.DescriptorsExec
       --input '{{ inputFile }}'
       --output '{{ outputFile }}'
       {% if alogp %}--alogp{% endif %}

@@ -93,7 +93,9 @@ dockerCreateDockerfile {
     int entrypointIndex = originalInstructions
             .findIndexOf { it.keyword == EntryPointInstruction.KEYWORD}
     originalInstructions.remove(entrypointIndex)
-    originalInstructions.add(new EntryPointInstruction("java", "-cp", "/app/resources:/app/classes:/app/libs/*"))
-    originalInstructions.add(new DefaultCommandInstruction("-version"))
+    //originalInstructions.add(new EntryPointInstruction("java", "-cp", "/app/resources:/app/classes:/app/libs/*"))
+    originalInstructions.add(new DefaultCommandInstruction("java -version"))
+    originalInstructions.add(new EnvironmentVariableInstruction("CLASSPATH", "/app/resources:/app/classes:/app/libs/*"))
+
     instructions.set(originalInstructions)
 }
