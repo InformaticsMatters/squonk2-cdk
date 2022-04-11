@@ -1,6 +1,5 @@
 ---
-# Tools from Silicos-it
-# See http://silicos-it.be.s3-website-eu-west-1.amazonaws.com/
+# Tools using the Chemistry Development Kit
 kind: DataManagerJobDefinition
 kind-version: '2021.1'
 name: CDK jobs
@@ -9,7 +8,7 @@ repository-url: https://github.com/InformaticsMatters/squonk2-cdk/data-manager/c
 repository-tag: '1.0.0'
 
 jobs:
-  molecular-descriptors:
+  cdk-molecular-descriptors:
     name: CDK molecular properties
     description: >-
       Calculate molecular properties using CDK's molecular descriptors.
@@ -18,7 +17,7 @@ jobs:
     keywords:
     - cdk
     - properties
-    doc-url: 'https://discourse.squonk.it/t/job-shape-it/93'
+    doc-url: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
     image:
       name: informaticsmatters/squonk2-cdk
       tag: 'latest'
@@ -67,12 +66,116 @@ jobs:
       outputs:
         type: object
         properties:
-          alignments:
+          results:
             title: Output molecules
             mime-types:
             - chemical/x-mdl-sdfile
             creates: '{{ outputFile }}'
             type: file
+            annotation-properties:
+              fields-descriptor:
+                origin: squonk2-job
+                description: CDK molecular properties
+                fields:
+                  ALogP_CDK:
+                    type: number
+                    description: >-
+                      ALogP (Ghose-Crippen LogKow)
+                    required: false
+                    active: true
+                  ALogP2_CDK:
+                    type: number
+                    description: >-
+                      ALogP2 from CDK
+                    required: false
+                    active: true
+                  AMR_CDK:
+                    type: number
+                    description: >-
+                      ALogP (Ghose-Crippen molar refractivity)
+                    required: false
+                    active: true
+                  XLogP_CDK:
+                    type: number
+                    description: >-
+                      logP using the XLogP method
+                    required: false
+                    active: true
+                  JPLogP_CDK:
+                    type: number
+                    description: >-
+                      logP model from J. Plante from Lhasa Ltd.
+                    required: false
+                    active: true
+                  HBA_CDK:
+                    type: number
+                    description: >-
+                      Hydrogen bond acceptor count
+                    required: false
+                    active: true
+                  HBD_CDK:
+                    type: number
+                    description: >-
+                      Hydrogen bond donor count
+                    required: false
+                    active: true
+                  TPSA_CDK:
+                    type: number
+                    description: >-
+                      Topological polar surface area (P. Ertl)
+                    required: false
+                    active: true
+                  FCSP3_CDK:
+                    type: number
+                    description: >-
+                      Fraction sp3 hybridised carbon atoms
+                    required: false
+                    active: true
+                  ROTB_CDK:
+                    type: number
+                    description: >-
+                      Number or rotatable bonds
+                    required: false
+                    active: true
+                  RING_COUNT_CDK:
+                    type: number
+                    description: >-
+                      Number of rings
+                    required: false
+                    active: true
+                  RING_COUNT_ARO_CDK:
+                    type: number
+                    description: >-
+                      Number of aromatic rings
+                    required: false
+                    active: true
+                  RING_SYS_CDK:
+                    type: number
+                    description: >-
+                      Number of ring systems
+                    required: false
+                    active: true
+                  RING_SYS_ARO_CDK:
+                    type: number
+                    description: >-
+                      Number of aromatic ring systems
+                    required: false
+                    active: true
+                  WienerPath_CDK:
+                    type: number
+                    description: >-
+                      Wiener path
+                    required: false
+                    active: true
+                  WienerPolarity_CDK:
+                    type: number
+                    description: >-
+                      Wiener polarity
+                    required: false
+                    active: true
+              service-execution:
+                service_ref: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
+              derived-from: inputFile
       options:
         type: object
         required:
