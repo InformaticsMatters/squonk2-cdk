@@ -23,6 +23,7 @@ jobs:
       tag: 'latest'
       project-directory: /data
       working-directory: /data
+      fix-permissions: true
     # The container has no entrypoint so this is the command that is executed.
     # The CLASSPATH environment variable in the container is set.
     command: >-
