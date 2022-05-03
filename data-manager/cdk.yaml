@@ -17,7 +17,6 @@ jobs:
     keywords:
     - cdk
     - properties
-    doc-url: 'https://discourse.squonk.it/t/job-cdk-molecular-descriptors/126'
     image:
       name: informaticsmatters/squonk2-cdk
       tag: 'latest'
