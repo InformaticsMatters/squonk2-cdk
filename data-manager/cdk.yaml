@@ -4,8 +4,6 @@ kind: DataManagerJobDefinition
 kind-version: '2021.1'
 name: CDK jobs
 collection: cdk
-repository-url: https://github.com/InformaticsMatters/squonk2-cdk/data-manager/cdk.yaml
-repository-tag: '1.0.0'
 
 jobs:
   cdk-molecular-descriptors:
