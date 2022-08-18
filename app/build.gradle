@@ -30,8 +30,7 @@ dependencies {
 
 
     // These dependencies are used by the application.
-    // seems that commons cli is not available from MavenCentral
-    implementation files('libs/commons-cli-1.5.0.jar')
+    implementation 'commons-cli:commons-cli:1.5.0'
 
     def cdkVersion = '2.7.1'
 
