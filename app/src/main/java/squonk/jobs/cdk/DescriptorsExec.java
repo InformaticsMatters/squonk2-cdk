@@ -170,6 +170,10 @@ public class DescriptorsExec {
             Files.createDirectories(dir);
         }
 
+        if (!inputFile.endsWith(".sdf")) {
+            DMLOG.logEvent(DMLogger.Level.WARNING,"File " + inputFile +
+                    " does not look like a SD-file. Behaviour might be unpredictable");
+        }
         try (IteratingSDFReader reader = MoleculeUtils.createSDFReader(inputFile)) {
 
             Stream<MoleculeObject> stream = DescriptorCalculator.calculate(reader, calculators, errors);
