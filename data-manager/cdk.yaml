@@ -10,14 +10,20 @@ jobs:
     name: CDK molecular properties
     description: >-
       Calculate molecular properties using CDK's molecular descriptors.
-    version: '1.0.0'
+    version: '1.1.0'
     category: comp chem
     keywords:
     - cdk
     - properties
+    doc-url: cdk/cdk-molecular-descriptors.md
     image:
       name: informaticsmatters/squonk2-cdk
-      tag: 'latest'
+      # An immutable tag, not 'latest'. The Data Manager re-pulls 'latest' and
+      # 'stable' on every run and caches everything else per node, so a static
+      # tag is what makes a Job reproducible - and it must never be reused.
+      # Bump this and 'version' together. See docs/versioning.md in the
+      # squonk2-jobs umbrella repository.
+      tag: '1.1.0'
       project-directory: /data
       working-directory: /data
       fix-permissions: true
