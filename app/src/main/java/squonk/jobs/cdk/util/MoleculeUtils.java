@@ -22,6 +22,7 @@ import org.openscience.cdk.aromaticity.ElectronDonation;
 import org.openscience.cdk.exception.CDKException;
 import org.openscience.cdk.graph.Cycles;
 import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.interfaces.IChemObjectBuilder;
 import org.openscience.cdk.io.SDFWriter;
 import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.silent.SilentChemObjectBuilder;
@@ -37,9 +38,21 @@ import java.util.List;
 public class MoleculeUtils {
 
 
+    // ElectronDonation.cdk() is deprecated, and deliberately kept. It is not a
+    // like-for-like swap: the replacements use a different aromaticity model,
+    // which would move the published values of every descriptor that depends
+    // on aromatic perception. Changing it is a decision about the Job's
+    // output, not a compiler warning to silence.
     public static final Aromaticity AROMATICITY = new Aromaticity(ElectronDonation.cdk(), Cycles.cdkAromaticSet());
 
-    public static final SilentChemObjectBuilder SILENT_OBJECT_BUILDER = (SilentChemObjectBuilder) SilentChemObjectBuilder.getInstance();
+    // 'getInstance()' has always been declared to return IChemObjectBuilder;
+    // the cast to the concrete class only ever happened to work because the
+    // singleton was an instance of it. From CDK 2.9 it is a nested holder class
+    // instead, and the cast throws ClassCastException in a static initialiser -
+    // which surfaces as 'Could not initialize class MoleculeUtils' from
+    // whichever call site touches it first. Nothing here needs the concrete
+    // type, so take the interface.
+    public static final IChemObjectBuilder SILENT_OBJECT_BUILDER = SilentChemObjectBuilder.getInstance();
     public static final CDKHydrogenAdder HYDROGEN_ADDER = CDKHydrogenAdder.getInstance(SILENT_OBJECT_BUILDER);
 
     /**

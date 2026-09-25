@@ -58,7 +58,7 @@ public abstract class DescriptorCalculator {
     }
 
     public static DescriptorCalculator[] createCalculators(MolecularDescriptors.Descriptor[] descriptors)
-            throws InstantiationException, IllegalAccessException {
+            throws ReflectiveOperationException {
         // prepare the calculators
         List<DescriptorCalculator> calculators = new ArrayList<>();
         for (
@@ -110,8 +110,31 @@ public abstract class DescriptorCalculator {
             AtomicInteger errorCount)
             throws Exception {
 
+        // Sequential, deliberately. This asked for a parallel stream from 2022
+        // until now, but never got one: up to and including JDK 17 an
+        // unknown-size ORDERED spliterator over an iterator ran the whole
+        // pipeline on a single worker thread, so the flag bought nothing and
+        // nothing underneath it was ever exercised concurrently. JDK 21 does
+        // split it - across every available core - and two pieces of shared
+        // mutable state then come apart:
+        //
+        //   * each DescriptorCalculator holds one IMolecularDescriptor and
+        //     reuses it for every molecule. CDK descriptors are not
+        //     thread-safe; SmallRingDescriptor in particular keeps the
+        //     adjacency tables it is working on in instance fields. Against
+        //     data/dhfr_3d.sdf on a 24-core machine that corrupts around 200
+        //     of the 756 molecules per run, each one caught and counted as an
+        //     error, so the Job still exits 0 with ring counts missing from a
+        //     quarter of its output.
+        //   * the per-calculator execution stats are a plain HashMap updated
+        //     with a read-modify-write (ExecutionStats.increment), so the
+        //     counts the Job reports would drift as well.
+        //
+        // Sequential restores exactly what every previous release did. Making
+        // this genuinely parallel is worth doing, but it means a descriptor
+        // instance per thread and a concurrent stats map, not a boolean.
         Stream<MoleculeObject> stream = StreamSupport.stream(
-                        Spliterators.spliteratorUnknownSize(mols, Spliterator.ORDERED), true)
+                        Spliterators.spliteratorUnknownSize(mols, Spliterator.ORDERED), false)
                 .map(MoleculeObject::new);
 
         return calculate(stream, calculators, errorCount);

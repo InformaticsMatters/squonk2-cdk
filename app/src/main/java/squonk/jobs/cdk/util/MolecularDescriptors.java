@@ -96,11 +96,12 @@ public class MolecularDescriptors {
          *
          * @param propNames Property names that will be used rather than the default ones.
          * @return
-         * @throws InstantiationException
-         * @throws IllegalAccessException
+         * @throws ReflectiveOperationException
          */
-        public DescriptorCalculator create(String[] propNames) throws InstantiationException, IllegalAccessException {
-            DescriptorCalculator inst = (DescriptorCalculator) this.implClass.newInstance();
+        public DescriptorCalculator create(String[] propNames) throws ReflectiveOperationException {
+            // Not Class.newInstance(), which has been deprecated since Java 9
+            // for swallowing the constructor's checked exceptions.
+            DescriptorCalculator inst = (DescriptorCalculator) this.implClass.getDeclaredConstructor().newInstance();
             inst.key = this.key;
             inst.propNames = propNames;
             return inst;
@@ -111,10 +112,9 @@ public class MolecularDescriptors {
          * calculations. Default property names are used.
          *
          * @return
-         * @throws InstantiationException
-         * @throws IllegalAccessException
+         * @throws ReflectiveOperationException
          */
-        public DescriptorCalculator create() throws InstantiationException, IllegalAccessException {
+        public DescriptorCalculator create() throws ReflectiveOperationException {
             return create(this.defaultPropNames);
         }
     }
